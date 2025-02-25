@@ -1,1 +1,1 @@
-# -EducationManagementSystem
+# EducationManagementSystem
