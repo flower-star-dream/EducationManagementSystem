@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.educationmanagementsystem.mapper.TaroMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.educationmanagementsystem.domain.Taro">
+            <id property="taroId" column="taro_id" jdbcType="INTEGER"/>
+            <result property="taroName" column="taro_name" jdbcType="VARCHAR"/>
+            <result property="affiliateFacultyId" column="affiliate_faculty_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        taro_id,taro_name,affiliate_faculty_id
+    </sql>
+    <update id="unboundId">
+        update
+            teacher, course
+        set teacher.affiliate_taro_id = -1, course.affiliate_taro_id = -1
+        where teacher.affiliate_taro_id = #{taroId,jdbcType=INTEGER} and course.affiliate_taro_id = #{taroId,jdbcType=INTEGER}
+    </update>
+    <update id="unboundIds">
+        update
+            teacher, course
+        set teacher.affiliate_taro_id = -1, course.affiliate_taro_id = -1
+        where
+            teacher.affiliate_taro_id in
+            <foreach item="taroId" collection="taroIds" open="(" separator="," close=")">
+                #{taroId,jdbcType=INTEGER}
+            </foreach>
+            and course.affiliate_taro_id in
+            <foreach item="taroId" collection="taroIds" open="(" separator="," close=")">
+                #{taroId,jdbcType=INTEGER}
+            </foreach>
+    </update>
+    <select id="selectOneAidByTaroName" resultType="java.lang.Integer">
+        select
+            taro_id
+        from taro
+        where taro_name = #{taroName,jdbcType=VARCHAR}
+    </select>
+    <select id="selectOneTaroNameByAid" resultType="java.lang.String">
+        select
+            taro_name
+        from taro
+        where taro_id = #{affiliateTaroId,jdbcType=INTEGER}
+    </select>
+</mapper>

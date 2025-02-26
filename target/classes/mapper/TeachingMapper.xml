@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.educationmanagementsystem.mapper.TeachingMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.educationmanagementsystem.domain.Teaching">
+            <id property="teacherId" column="teacher_id" jdbcType="VARCHAR"/>
+            <id property="courseId" column="course_id" jdbcType="INTEGER"/>
+            <result property="teachingType" column="teaching_type" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        teacher_id,course_id,teaching_type
+    </sql>
+    <update id="updateById">
+        update teaching
+        set teaching_type = #{teaching.teachingType,jdbcType=VARCHAR}
+        where teacher_id = #{teaching.teacherId,jdbcType=VARCHAR} and course_id = #{teaching.courseId,jdbcType=INTEGER}
+    </update>
+    <delete id="deleteById">
+        delete
+        from teaching
+        where teacher_id = #{tid,jdbcType=VARCHAR} and course_id = #{cid,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteBatchIds">
+        delete from teaching
+        where (teacher_id, course_id) in
+        <foreach item="tid" index="index" collection="tids" open="(" separator="," close=")">
+            <foreach collection="cids" item="cid" index="index" open="(" close=")" separator=",">
+                #{tid} , #{cid}
+            </foreach>
+        </foreach>
+    </delete>
+    <select id="selectJoinPage2" resultType="com.example.educationmanagementsystem.dto.TeachStuDto">
+        select t.teacher_id as tid, t.course_id as cid, c.course_name as courseName,
+                s.student_id as sid, s.student_name as studentName,s.student_gender as gender,
+                s.student_phone as phone, s.affiliate_class_id as clid, cl.class_name as className
+        from teaching t
+                 inner join course c on t.course_id = c.course_id
+                 inner join learning l on c.course_id = l.course_id
+                 inner join student s on l.student_id = s.student_id
+                 inner join class cl on s.affiliate_class_id = cl.class_id
+        where t.teacher_id = #{tid}
+        <if test="sid != null and sid != ''">
+            and s.student_id like concat('%', #{sid,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="cid != null">
+            and c.course_id like concat('%', #{cid,jdbcType=INTEGER}, '%')
+        </if>
+        <if test="sName != null and sName != ''">
+            and s.student_name like concat('%', #{sName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="cName != null and cName != ''">
+            and c.course_name like concat('%', #{cName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="className != null and className != ''">
+            and cl.class_name like concat('%', #{className}, '%')
+        </if>
+    </select>
+    <select id="selectJoinPage3" resultType="com.example.educationmanagementsystem.dto.TeachingDto">
+        select distinct t.teacher_id as tid, te.teacher_name, t.course_id as cid, c.course_name as courseName,
+                t.teaching_type as teachingType, l.learning_type as learningType, c.course_credit as credit,
+                c.course_time as time, c.course_room as room
+        from teaching t
+                inner join teacher te on t.teacher_id = te.teacher_id
+                inner join course c on t.course_id = c.course_id
+                inner join learning l on c.course_id = l.course_id
+        where t.teacher_id = #{tid,jdbcType=VARCHAR}
+        <if test="cid != null">
+            and c.course_id like concat('%', #{cid,jdbcType=INTEGER}, '%')
+        </if>
+        <if test="cName != null and cName != ''">
+            and c.course_name like concat('%', #{cName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="teachingType != null and teachingType != ''">
+            and t.teaching_type like concat('%', #{teachingType,jdbcType=VARCHAR}, '%')
+        </if>
+    </select>
+</mapper>

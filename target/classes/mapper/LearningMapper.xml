@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.educationmanagementsystem.mapper.LearningMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.educationmanagementsystem.domain.Learning">
+            <id property="studentId" column="student_id" jdbcType="VARCHAR"/>
+            <id property="courseId" column="course_id" jdbcType="INTEGER"/>
+            <result property="learningType" column="learning_type" jdbcType="VARCHAR"/>
+            <result property="score" column="score" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        student_id,course_id,learning_type,
+        score
+    </sql>
+    <update id="updateById">
+        update learning
+        set learning_type = #{learning.learningType,jdbcType=VARCHAR},
+        score = #{learning.score,jdbcType=INTEGER}
+        where student_id = #{learning.studentId,jdbcType=VARCHAR} and course_id = #{learning.courseId,jdbcType=INTEGER}
+    </update>
+    <delete id="deleteById">
+        delete
+        from learning
+        where student_id = #{sid,jdbcType=VARCHAR} and course_id = #{cid,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteBatchIds">
+        delete from learning
+        where (student_id, course_id) in
+        <foreach item="sid" index="index" collection="sids" open="(" separator="," close=")">
+            <foreach collection="cids" item="cid" index="index" open="(" close=")" separator=",">
+                #{sid} , #{cid}
+            </foreach>
+        </foreach>
+    </delete>
+    <delete id="deleteBySid">
+        delete
+        from learning
+        where student_id = #{sid,jdbcType=VARCHAR}
+    </delete>
+    <delete id="deleteBatchSids">
+        delete from learning
+        where student_id in
+        <foreach item="sid" index="index" collection="sids" open="(" separator="," close=")">
+            #{sid}
+        </foreach>
+    </delete>
+    <select id="selectJoinPage2" resultType="com.example.educationmanagementsystem.dto.LearnTeacherDto">
+        select l.student_id as sid, l.course_id as cid, c.course_name as courseName,
+               t.teaching_type as teachingType, l.learning_type as learningType, c.course_credit as credit,
+               c.course_time as time, c.course_room as room,
+               group_concat(distinct te.teacher_id order by te.teacher_id separator ', ') as tid,
+               group_concat(te.teacher_name order by te.teacher_id separator ',') as teacherName,
+               group_concat(te.teacher_gender order by te.teacher_id separator ',') as gender,
+               group_concat(te.teacher_phone order by te.teacher_id separator ',') as phone,
+               group_concat(te.teacher_title order by te.teacher_id separator ',') as title
+        from learning l
+                 inner join course c on l.course_id = c.course_id
+                 inner join teaching t on c.course_id = t.course_id
+                 inner join teacher te on t.teacher_id = te.teacher_id
+                 inner join student s on l.student_id = s.student_id
+        where l.student_id = #{sid}
+        <if test="cid != null">
+            and c.course_id like concat('%', #{cid,jdbcType=INTEGER}, '%')
+        </if>
+        <if test="tName != null and tName != ''">
+            and te.teacher_name like concat('%', #{tName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="cName != null and cName != ''">
+            and c.course_name like concat('%', #{cName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="learningType != null and learningType != ''">
+            and l.learning_type like concat('%', #{learningType}, '%')
+        </if>
+        group by
+		    l.student_id, l.course_id, c.course_name,
+		    t.teaching_type, l.learning_type, c.course_credit,
+		    c.course_time, c.course_room
+    </select>
+    <select id="selectClassNameByCourseIdTId" resultType="java.lang.String">
+        select
+            group_concat(distinct cl.class_name order by cl.class_name separator ', ') as className
+        from teacher te
+            inner join teaching t on t.teacher_id = te.teacher_id
+            inner join course c on t.course_id = c.course_id
+            inner join learning l on l.course_id = c.course_id
+            inner join student s on s.student_id = l.student_id
+            inner join class cl on s.affiliate_class_id = cl.class_id
+        where te.teacher_id = #{tid,jdbcType=VARCHAR} and c.course_id = #{cid,jdbcType=INTEGER}
+    </select>
+    <select id="selectAverage" resultType="java.lang.Double">
+        select avg(score)
+        from learning
+        where course_id = #{cid,jdbcType=VARCHAR}
+    </select>
+    <select id="selectScore" resultType="com.example.educationmanagementsystem.dto.CalcGPADto">
+        select l.score as score, c.course_credit as credit
+        from learning l
+            inner join course c on l.course_id = c.course_id
+        where l.student_id = #{sid,jdbcType=VARCHAR}
+    </select>
+</mapper>

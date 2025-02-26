@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.educationmanagementsystem.mapper.MajorMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.educationmanagementsystem.domain.Major">
+            <id property="majorId" column="major_id" jdbcType="INTEGER"/>
+            <result property="majorName" column="major_name" jdbcType="VARCHAR"/>
+            <result property="affiliateFacultyId" column="affiliate_faculty_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        major_id,major_name,affiliate_faculty_id
+    </sql>
+    <update id="unboundId">
+        update class
+        set affiliate_major_id = -1
+        where affiliate_major_id = #{majorId,jdbcType=INTEGER}
+    </update>
+    <update id="unboundIds">
+        update class
+        set affiliate_major_id = -1
+        where affiliate_major_id in
+        <foreach collection="majorIds" item="majorId" open="(" separator="," close=")">
+            #{majorId,jdbcType=INTEGER}
+        </foreach>
+    </update>
+
+    <select id="selectOneAidByMajorName" resultType="java.lang.Integer">
+        select
+            major_id
+        from major
+        where major_name = #{majorName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectOneMajorNameByAid" resultType="java.lang.String">
+        select
+            major_name
+        from major
+        where major_id = #{affiliateMajorId, jdbcType=INTEGER}
+    </select>
+</mapper>

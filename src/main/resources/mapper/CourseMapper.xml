@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.educationmanagementsystem.mapper.CourseMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.educationmanagementsystem.domain.Course">
+            <id property="courseId" column="course_id" jdbcType="INTEGER"/>
+            <result property="courseName" column="course_name" jdbcType="VARCHAR"/>
+            <result property="courseCredit" column="course_credit" jdbcType="INTEGER"/>
+            <result property="courseTime" column="course_time" jdbcType="INTEGER"/>
+            <result property="courseRoom" column="course_room" jdbcType="VARCHAR"/>
+            <result property="affiliateTaroId" column="affiliate_taro_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        course_id,course_name,course_credit,
+        course_time,course_room,affiliate_taro_id
+    </sql>
+    <select id="selectOneCidByCourseName" resultType="java.lang.Integer">
+        select
+            course_id
+        from course
+        where course_name = #{courseName,jdbcType=VARCHAR}
+    </select>
+    <select id="selectOneCourseNameByCid" resultType="java.lang.String">
+        select
+            course_name
+        from course
+        where course_id = #{courseId,jdbcType=INTEGER}
+    </select>
+    <select id="selectBoundId" resultType="java.lang.Integer">
+        select
+            count(distinct c.course_id)
+        from course c
+                inner join learning l on c.course_id = l.course_id
+                inner join teaching t on c.course_id = t.course_id
+        where c.course_id = #{courseId,jdbcType=INTEGER}
+    </select>
+    <select id="selectBoundIds" resultType="java.lang.Integer">
+        select
+            count(distinct c.course_id)
+        from course c
+                inner join learning l on c.course_id = l.course_id
+                inner join teaching t on c.course_id = t.course_id
+        where c.course_id in
+        <foreach collection="courseIds" item="courseId" open="(" separator="," close=")">
+            #{courseId,jdbcType=INTEGER}
+        </foreach>
+    </select>
+</mapper>
