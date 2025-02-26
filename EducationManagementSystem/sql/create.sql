@@ -1,3 +1,4 @@
+create database if not exists EducationManagementSystem;
 use EducationManagementSystem;
 create table User(
     id int primary key auto_increment,
