@@ -1,5 +1,5 @@
 # 教学管理系统（课设）使用文档
-
+该系统使用技术栈为vue3+SpringBoot，若需要可自取
 注：在安装前确保设备上已安装[node.js](https://nodejs.org/en/download "node.js官网链接")、[mysql](https://dev.mysql.com/downloads/mysql/ "mysql官网链接")
 
 启动流程：
